@@ -12,6 +12,6 @@ spec:
     server: {{ .Values.spec.destination.server }}
   project: default
   source:
-    path: pipelines-factory
+    path: pipeline-factory
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
