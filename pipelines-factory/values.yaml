@@ -15,3 +15,25 @@ pipelines:
     appImageUrl: latest
     appImageTag: latest
     gitHashCommit: '1.0.0'
+  
+  - projectOcName: ms-novo-service
+    type: javaSemSonar
+    pipeName: ms-boleto-pipeline-dev
+    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello'
+    appSourceBranch: 'develop'
+    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello-dev-config'
+    appManifestGitBranch: 'master'
+    appManifestPath: 'spring-boot-hello'
+    appImageUrl: latest
+    appImageTag: latest
+    gitHashCommit: '1.0.0'
+
+namespaces:
+  ms-novo-service:
+    environments:
+      - name: dev
+        nodeSelector: desenv
+      - name: hml
+        nodeSelector: homol
+      - name: prod
+        nodeSelector: prod
