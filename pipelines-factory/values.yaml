@@ -4,7 +4,7 @@ config:
   nexusPass: admin123
 
 pipelines: 
-  - projectOcName: ms-boletos-dev
+  - projectOcName: ms-boletoes-dev
     type: java
     pipeName: ms-boleto-pipeline-dev
     appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello'
