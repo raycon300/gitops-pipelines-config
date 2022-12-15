@@ -12,6 +12,6 @@ spec:
     server: {{ .Values.spec.destination.server }}
   project: default
   source:
-    path: pipelines
+    path: pipelines-config
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
