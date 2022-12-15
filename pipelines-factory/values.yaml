@@ -5,7 +5,7 @@ config:
 
 pipelines: 
   - projectOcName: ms-boletoes-dev
-    type: java
+    type: javaSemSonar
     pipeName: ms-boleto-pipeline-dev
     appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello'
     appSourceBranch: 'develop'
