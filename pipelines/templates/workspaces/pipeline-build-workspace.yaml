@@ -1,0 +1,17 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pipeline-build-workspace-{{ $pipeline.pipeName }}
+  namespace: {{ $pipeline.projectOcName }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  volumeMode: Filesystem
+{{ end }}
+{{ end }}

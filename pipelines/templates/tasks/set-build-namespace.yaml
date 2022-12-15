@@ -1,0 +1,37 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git  
+  name: set-build-namespace
+  namespace: {{ $pipeline.projectOcName }}
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task can be used to set the namespace to run pipeline
+  params:
+    - name: PROJECT_OC_NAME
+      type: string              
+  results:
+    - description: The namespace where pipeline will running
+      name: ns
+    - description: The name of branch without special characters
+      name: clean_branch      
+  steps:              
+    - image: 'registry.redhat.io/rhel7-atomic:latest'
+      name: check-branch
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+        set -xe         
+        
+        PROJECT=$(echo -n "$(params.PROJECT_OC_NAME)") 
+        
+        echo -n $PROJECT > $(results.ns.path)
+{{ end }}
+{{ end }}      

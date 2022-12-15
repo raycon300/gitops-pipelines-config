@@ -1,0 +1,62 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: build-tool
+  name: build-tag-push-angular  
+  namespace: {{ $pipeline.projectOcName }}
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task can be used to run a Maven build.
+  params:
+    - default: ''
+      description: App Image Name
+      name: APP_IMAGE
+      type: string
+  steps:              
+#    - image: 'registry.access.redhat.com/ubi8/podman:latest'
+    - image: 'docker.io/library/node:16'
+      name: build-angular
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+
+        npm install -g @angular/cli
+        npm install 
+        ng build
+
+      workingDir: $(workspaces.workspace.path)
+    - image: 'registry.access.redhat.com/ubi8/podman:latest'
+      name: build-image
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+
+        cat > ./Dockerfile-angular <<EOF
+
+        FROM registry.access.redhat.com/ubi8/nginx-120:1-54
+        COPY nginx.conf "${NGINX_CONF_PATH}"
+        COPY ./app/dist/portal-front-angular .
+        
+        CMD nginx -g "daemon off;"
+
+        EOF
+
+        ls -la 
+        
+        cat ./Dockerfile-angular
+
+        podman build ./Dockerfile-angular -t $(params.APP_IMAGE)
+
+      workingDir: $(workspaces.workspace.path)
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace         
+{{ end }}
+{{ end }}

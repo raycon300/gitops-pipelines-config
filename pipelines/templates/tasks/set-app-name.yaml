@@ -1,0 +1,56 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git  
+  name: set-app-name
+  namespace: {{ $pipeline.projectOcName }}
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task get app name from deployment file.
+  params:
+    - name: GIT_REPOSITORY
+      type: string
+    - name: SOURCE_BRANCH     
+      type: string
+    - name: SOURCE_FOLDER     
+      type: string  
+  results:
+    - description: Application name
+      name: app_name
+  steps:      
+    - image: 'docker.io/alpine/git:v2.26.2'
+      name: git-clone-config-repo
+      resources: {}
+      script: |
+        cp /workspace/basic-auth/.git-credentials ~/.git-credentials
+        cp /workspace/basic-auth/.gitconfig ~/.gitconfig
+        rm -fr git-update-tag-workdir
+        git -c http.sslVerify=false clone -b $(params.SOURCE_BRANCH) $(params.GIT_REPOSITORY) git-update-tag-workdir
+        
+      workingDir: $(workspaces.workspace.path)
+    - image: alpine    
+      name: get-app-name
+      resources: {}
+      script: |   
+        cd git-update-tag-workdir
+        cd $(params.SOURCE_FOLDER)
+
+        DEPLOY_FILE=$(grep "config-file" * |awk -F":" '{print $1}')
+        echo -n $(grep -i "  deploymentName:" $DEPLOY_FILE |head -n1|awk -F":" '{print $2}') > $(results.app_name.path)
+        
+      workingDir: $(workspaces.workspace.path)
+      
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace 
+    - description: Git auth
+      name: basic-auth
+{{ end }}
+{{ end }}

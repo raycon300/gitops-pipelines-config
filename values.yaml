@@ -1,0 +1,6 @@
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/gitops-pipelines-config
+    targetRevision: HEAD

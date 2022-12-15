@@ -1,0 +1,58 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: skopeo  
+  name: skopeo-copy-custom
+  namespace: {{ $pipeline.projectOcName }}
+spec:
+  description: This Task can be used to update image in registry
+  params:
+    - name: srcTLSverify
+      type: string
+    - name: destTLSverify
+      type: string
+    - name: srcImageURL
+      description: src Image URL     
+    - name: destImageURL
+      type: string
+    - name: registry
+      type: string
+  results:
+    - description: The result teste
+      name: branch
+  steps:      
+    - image: 'quay.io/skopeo/stable:v1.9.0'
+      env:
+        - name: REGISTRY_USER
+          valueFrom:
+            secretKeyRef:
+              name: registry-token
+              key: user  
+        - name: REGISTRY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: registry-token
+              key: password                  
+    
+      name: copy-registry
+      resources: {}
+      script: |
+
+        {
+          skopeo login --tls-verify=false -u $REGISTRY_USER -p $REGISTRY_TOKEN $(params.registry)
+        } &> /dev/null
+        
+        skopeo copy $(params.srcImageURL) $(params.destImageURL) --src-tls-verify=$(params.srcTLSverify) --dest-tls-verify=$(params.destTLSverify)
+        
+      workingDir: $(workspaces.workspace.path)
+      
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace 
+{{ end }}
+{{ end }}

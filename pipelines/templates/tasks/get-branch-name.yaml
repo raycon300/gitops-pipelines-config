@@ -1,0 +1,46 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git  
+  name: get-branch-name
+  namespace: {{ $pipeline.projectOcName }}
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This task make handle in branch names 
+  params:
+    - name: RAW_BRANCH
+      type: string              
+  results:
+    - description: The name of branch without special characters
+      name: branch_handled
+  steps:              
+    - image: 'registry.redhat.io/rhel7-atomic:latest'
+      name: processing-branch
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+        set -xe         
+        
+        BRANCH_UNDER=$(echo "$(params.RAW_BRANCH)"|grep "_"|wc -l) 
+        BRANCH_HIFEN=$(echo "$(params.RAW_BRANCH)"|grep "-"|wc -l) 
+        
+        if [ "$BRANCH_UNDER" -gt 0 ]
+        then
+          MY_BRANCH=$(echo $(params.RAW_BRANCH) |awk -F"_" '{print $1}')
+          echo -n $MY_BRANCH > $(results.branch_handled.path)
+        elif [ "$BRANCH_HIFEN" -gt 0 ]
+        then
+          MY_BRANCH=$(echo $(params.RAW_BRANCH) |awk -F"-" '{print $1}')
+          echo -n $MY_BRANCH > $(results.branch_handled.path)
+        else
+          echo -n $(params.RAW_BRANCH) > $(results.branch_handled.path)
+        fi
+{{ end }}
+{{ end }}

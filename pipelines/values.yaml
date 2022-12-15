@@ -1,0 +1,86 @@
+config:
+  sonar: http://sonarqube.cicd.svc.cluster.local:9000
+  sonarUser: user
+  sonarPass: user
+  nexus: http://example-nexusrepo-sonatype-nexus-service.cicd.svc.cluster.local:8081
+  nexusUser: admin
+  nexusPass: admin123
+
+pipelines: 
+  - projectOcName: spring-boot-dev
+    projectProdOcName: na
+    type: java
+    pipeName: spring-boot-hello
+    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello'
+    appSourceBranch: 'develop'
+    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello-dev-config'
+    appManifestGitBranch: 'master'
+    appManifestPath: 'spring-boot-hello'
+    appImageUrl: latest
+    appImageTag: latest
+    gitHashCommit: '1.0.0'
+
+  - projectOcName: spring-boot-hmg
+    projectProdOcName: spring-boot-prod
+    type: java
+    pipeName: spring-boot-hello
+    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello'
+    appSourceBranch: 'release'
+    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello-hmg-config'
+    appManifestGitBranch: 'master'
+    appManifestPath: 'spring-boot-hello'
+    appImageUrl: latest
+    appImageTag: latest
+    gitHashCommit: '1.0.0'
+
+  - projectOcName: app-example-dev
+    projectProdOcName: na
+    type: angular
+    pipeName: portal-front-angular
+    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular'
+    appSourceBranch: 'develop'
+    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular-dev-config'
+    appManifestGitBranch: 'master'
+    appManifestPath: 'portal-front-angular'
+    appImageUrl: latest
+    appImageTag: latest
+    gitHashCommit: '1.0.0'    
+
+  - projectOcName: app-example-hmg
+    projectProdOcName: app-example-prod
+    type: angular
+    pipeName: portal-front-angular
+    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular'
+    appSourceBranch: 'release'
+    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular-hmg-config'
+    appManifestGitBranch: 'master'
+    appManifestPath: 'portal-front-angular'
+    appImageUrl: latest
+    appImageTag: latest
+    gitHashCommit: '1.0.0'    
+
+  - projectOcName: app-example-dev
+    projectProdOcName: na
+    type: angular
+    pipeName: portal-front-angular1
+    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular'
+    appSourceBranch: 'develop'
+    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular-dev-config'
+    appManifestGitBranch: 'master'
+    appManifestPath: 'portal-front-angular'
+    appImageUrl: latest
+    appImageTag: latest
+    gitHashCommit: '1.0.0'    
+
+  - projectOcName: app-example-hmg
+    projectProdOcName: app-example-prod
+    type: angular
+    pipeName: portal-front-angular1
+    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular'
+    appSourceBranch: 'release'
+    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/portal-front-angular-hmg-config'
+    appManifestGitBranch: 'master'
+    appManifestPath: 'portal-front-angular'
+    appImageUrl: latest
+    appImageTag: latest
+    gitHashCommit: '1.0.0'    

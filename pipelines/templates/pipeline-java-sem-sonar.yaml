@@ -1,0 +1,211 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+
+{{ if eq $pipeline.type "javaSemSonar" }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline-java-{{ $pipeline.pipeName }}
+  namespace: {{ $pipeline.projectOcName }}
+spec:
+  params:
+    - name: APP_SOURCE_GIT
+      description: The application git repository      
+      type: string
+      default: {{ $pipeline.appSourceGit }}
+    - name: APP_SOURCE_BRANCH
+      type: string         
+      default: {{ $pipeline.appSourceBranch }}       
+    - name: APP_MANIFESTS_GIT      
+      type: string
+      default: {{ $pipeline.appManifestGit }}       
+    - name: APP_MANIFESTS_GIT_BRANCH      
+      type: string
+      default: {{ $pipeline.appManifestGitBranch }}       
+    - default: {{ $pipeline.appManifestPath }}
+      description: The application manifests git repository path
+      name: APP_MANIFESTS_PATH
+      type: string
+    - default: {{ $pipeline.appImageUrl }}
+      description: The url application image to build
+      name: APP_IMAGE_URL
+      type: string
+    - default: {{ $pipeline.appImageTag }}
+      description: The application image tag to build
+      name: APP_IMAGE_TAG
+      type: string
+    - default: {{ $pipeline.projectOcName }}
+      description: The pipelines project runs
+      name: PROJECT_OC_NAME
+      type: string
+    - default: {{ $pipeline.projectProdOcName }}
+      description: The pipelines project runs
+      name: PROJECT_PROD_OC_NAME
+      type: string
+    - name: GIT_HASH_COMMIT
+      type: string
+      description: The application image tag to build
+      default: {{ $pipeline.gitHashCommit }}
+  results:
+    - description: The image digest built in the pipeline
+      name: APP_NAMESPACE
+      value: $(tasks.set-namespace.results.ns)
+    - description: The name of branch handled
+      name: HANDLED_BRANCH
+      value: $(tasks.adjust-branch-name.results.branch_handled)   
+    - description: The name of branch handled
+      name: APP_NAME
+      value: $(tasks.app-name.results.app_name)        
+  tasks:
+    - name: adjust-branch-name
+      params:
+        - name: RAW_BRANCH
+          value: $(params.APP_SOURCE_BRANCH)  
+      taskRef:
+        kind: Task
+        name: get-branch-name
+    - name: source-clone
+      when: 
+        - input: $(tasks.adjust-branch-name.results.branch_handled)
+          operator: in
+          values: ["develop","hotfix","release"]
+      params:
+        - name: url
+          value: $(params.APP_SOURCE_GIT)
+        - name: revision
+          value: "$(params.APP_SOURCE_BRANCH)"
+        - name: depth
+          value: '0'
+        - name: deleteExisting
+          value: 'true'
+        - name: sslVerify
+          value: 'false'
+      runAfter:
+        - adjust-branch-name       
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: workspace
+        - name: basic-auth
+          workspace: git-auth
+    - name: build-app
+      params:
+        - name: GOALS
+          value:
+            - clean
+            - package
+            - '-Dmaven.repo.local=.m2'
+      runAfter:
+        - source-clone
+      taskRef:
+        kind: ClusterTask
+        name: maven
+      workspaces:
+        - name: source
+          workspace: workspace
+        - name: maven-settings
+          workspace: maven-settings
+    - name: set-namespace
+      params:
+        - name: PROJECT_OC_NAME
+          value: $(params.PROJECT_OC_NAME)
+      runAfter:
+        - build-app 
+      taskRef:
+        kind: Task
+        name: set-build-namespace             
+    - name: app-name
+      params:               
+        - name: GIT_REPOSITORY
+          value: $(params.APP_MANIFESTS_GIT)  
+        - name: SOURCE_BRANCH
+          value: $(params.APP_MANIFESTS_GIT_BRANCH)
+        - name: SOURCE_FOLDER
+          value: $(params.APP_MANIFESTS_PATH)  
+      runAfter:
+        - set-namespace
+      taskRef:
+        kind: Task
+        name: set-app-name
+      workspaces:
+        - name: workspace
+          workspace: workspace  
+        - name: basic-auth
+          workspace: git-auth    
+    - name: build-image
+      params:
+        - name: TLSVERIFY
+          value: 'false'
+        - name: IMAGE
+          value: >-
+             image-registry.openshift-image-registry.svc:5000/$(tasks.set-namespace.results.ns)/$(tasks.app-name.results.app_name):$(params.GIT_HASH_COMMIT)
+      runAfter:
+        - app-name
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: workspace
+    - name: update-deployment
+      params:               
+        - name: GIT_REPOSITORY
+          value: $(params.APP_MANIFESTS_GIT)  
+        - name: CURRENT_IMAGE
+          value: '$(params.APP_IMAGE_URL):latest'
+        - name: NEW_IMAGE
+          value: $(params.APP_IMAGE_URL)
+        - name: NEW_DIGEST
+          value: $(tasks.build-image.results.IMAGE_DIGEST)
+        - name: APP_MANIFESTS_PATH
+          value: $(params.APP_MANIFESTS_PATH)
+        - name: GIT_HASH_COMMIT
+          value: $(params.GIT_HASH_COMMIT)      
+        - name: APP_BRANCH
+          value: $(tasks.set-namespace.results.ns)
+        - name: SOURCE_BRANCH
+          value: $(params.APP_MANIFESTS_GIT_BRANCH)  
+      runAfter:
+        - build-image
+      taskRef:
+        kind: Task
+        name: git-update-deployment
+      workspaces:
+        - name: workspace
+          workspace: workspace  
+        - name: basic-auth
+          workspace: git-auth          
+    - name: skopeo-copy
+      when:
+        - input: $(tasks.adjust-branch-name.results.branch_handled)
+          operator: in
+          values: ["hotfix","release"]
+      params:
+      - name: srcTLSverify
+        value: "false"
+      - name: destTLSverify
+        value: "false"
+      - name: srcImageURL
+        value: docker://image-registry.openshift-image-registry.svc:5000/$(tasks.set-namespace.results.ns)/$(tasks.app-name.results.app_name):$(params.GIT_HASH_COMMIT)
+      - name: destImageURL
+        value: docker://image-registry.openshift-image-registry.svc:5000/$(params.PROJECT_PROD_OC_NAME)/$(tasks.app-name.results.app_name):$(params.GIT_HASH_COMMIT)
+      - name: registry
+        value: image-registry.openshift-image-registry.svc:5000
+      runAfter:
+      - update-deployment
+      taskRef:
+        kind: Task
+        name: skopeo-copy-custom
+      workspaces:
+      - name: workspace
+        workspace: workspace          
+  workspaces:
+    - name: workspace
+    - name: maven-settings
+    - name: git-auth
+{{ end }}
+{{ end }}
+{{ end }}    
