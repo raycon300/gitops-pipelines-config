@@ -27,13 +27,3 @@ pipelines:
     appImageUrl: latest
     appImageTag: latest
     gitHashCommit: '1.0.0'
-
-namespaces:
-  ms-novo-service:
-    environments:
-      - name: dev
-        nodeSelector: desenv
-      - name: hml
-        nodeSelector: homol
-      - name: prod
-        nodeSelector: prod
