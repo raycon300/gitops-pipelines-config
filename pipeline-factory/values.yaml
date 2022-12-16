@@ -4,8 +4,7 @@ config:
   nexusPass: admin123
 
 pipelines: 
-  - projectOcName: ms-boletoes-dev2
-    
+  - projectOcName: ms-boletoes-dev
     type: javaSemSonar
     pipeName: ms-boleto-pipeline-dev
     appSourceGit: 'https://github.com/raycon300/app-service'
