@@ -189,8 +189,8 @@ spec:
       workspaces:
         - name: workspace
           workspace: workspace  
-        - name: basic-auth
-          workspace: git-auth          
+#        - name: basic-auth
+#          workspace: git-auth          
     - name: skopeo-copy
       when:
         - input: $(tasks.adjust-branch-name.results.branch_handled)
@@ -218,6 +218,6 @@ spec:
   workspaces:
     - name: workspace
     - name: maven-settings
-    - name: git-auth
+#    - name: git-auth
 {{ end }}
 {{ end }}    
