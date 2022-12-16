@@ -1,0 +1,795 @@
+NAME: namespaces
+LAST DEPLOYED: Fri Dec 16 09:36:12 2022
+NAMESPACE: cicd
+STATUS: pending-install
+REVISION: 1
+TEST SUITE: None
+USER-SUPPLIED VALUES:
+{}
+
+COMPUTED VALUES:
+config:
+  nexus: http://nexus.cicd.svc.cluster.local:8081
+  nexusPass: admin123
+  nexusUser: admin
+pipelines:
+- appImageTag: latest
+  appImageUrl: latest
+  appManifestGit: http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello-dev-config
+  appManifestGitBranch: master
+  appManifestPath: spring-boot-hello
+  appSourceBranch: develop
+  appSourceGit: http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello
+  gitHashCommit: 1.0.0
+  pipeName: ms-boleto-pipeline-dev
+  projectOcName: ms-boletoes-dev2
+  type: javaSemSonar
+
+HOOKS:
+MANIFEST:
+---
+# Source: gitops-pipelines-factory/templates/pipeline-java.yaml
+#apiVersion: tekton.dev/v1beta1
+#kind: Pipeline
+#metadata:
+#  name: pipeline-java-ms-boleto-pipeline-dev
+#  namespace: ms-boletoes-dev2
+#spec:
+#  params:
+#    - name: APP_SOURCE_GIT
+#      type: string
+#      default: http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello
+
+#    - name: APP_SOURCE_BRANCH
+#      type: string         
+#      default: develop
+
+#    - name: APP_MANIFESTS_GIT      
+#      type: string
+#      default: http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello-dev-config   
+
+#    - name: APP_MANIFESTS_GIT_BRANCH      
+#      type: string
+#      default: master    
+
+#    - name: APP_MANIFESTS_PATH
+#      type: string
+#      default: master
+#      description: The application manifests git repository path
+
+#    - name: APP_IMAGE_URL
+#      type: string
+#      default: latest
+#      description: The url application image to build
+
+#    - name: APP_IMAGE_TAG
+#      type: string
+#      default: latest
+#      description: The application image tag to build
+#      
+#    - name: PROJECT_OC_NAME
+#      type: string
+#      default: ms-boletoes-dev2
+#      description: The pipelines project runs
+
+#    - name: PROJECT_PROD_OC_NAME
+#      type: string
+#      default: 
+#      description: The pipelines project runs
+
+#    - name: GIT_HASH_COMMIT
+#      type: string
+#      default: 1.0.0
+#      description: The application image tag to build
+
+#  results:
+#    - description: The image digest built in the pipeline
+#      name: APP_NAMESPACE
+#      value: $(tasks.set-namespace.results.ns)
+
+#    - description: The name of branch handled
+#      name: HANDLED_BRANCH
+#      value: $(tasks.adjust-branch-name.results.branch_handled)
+
+#    - description: The name of branch handled
+#      name: APP_NAME
+#      value: $(tasks.app-name.results.app_name)   
+
+#  tasks:
+#    - name: adjust-branch-name
+#      params:
+#        - name: RAW_BRANCH
+#          value: $(params.APP_SOURCE_BRANCH)  
+#      taskRef:
+#        kind: Task
+#        name: get-branch-name # TASK NAME
+#    - name: source-clone
+#      when: 
+#        - input: $(tasks.adjust-branch-name.results.branch_handled)
+#          operator: in
+#          values: ["develop","hotfix","release"]
+#      params:
+#        - name: url
+#          value: $(params.APP_SOURCE_GIT)
+#        - name: revision
+#          value: "$(params.APP_SOURCE_BRANCH)"
+#        - name: depth
+#          value: '0'
+#        - name: deleteExisting
+#          value: 'true'
+#        - name: sslVerify
+#          value: 'false'
+#      runAfter:
+#        - adjust-branch-name       
+#      taskRef:
+#        kind: ClusterTask 
+#        name: git-clone # TASK NAME
+#      workspaces:
+#        - name: output
+#          workspace: workspace
+#        - name: basic-auth
+#          workspace: git-auth
+#    - name: build-app
+#      params:
+#        - name: GOALS
+#          value:
+#            - clean
+#            - package
+#            - '-Dmaven.repo.local=.m2'
+#      runAfter:
+#        - source-clone
+#      taskRef:
+#        kind: ClusterTask
+#        name: maven # TASK NAME
+#      workspaces:
+#        - name: source
+#          workspace: workspace
+#        - name: maven-settings
+#          workspace: maven-settings
+#    - name: set-namespace
+#      params:
+#        - name: PROJECT_OC_NAME
+#          value: $(params.PROJECT_OC_NAME)
+#      runAfter:
+#        - build-app 
+#      taskRef:
+#        kind: Task
+#        name: set-build-namespace     # TASK NAME        
+#    - name: app-name
+#      params:               
+#        - name: GIT_REPOSITORY
+#          value: $(params.APP_MANIFESTS_GIT)  
+#        - name: SOURCE_BRANCH
+#          value: $(params.APP_MANIFESTS_GIT_BRANCH)
+#        - name: SOURCE_FOLDER
+#          value: $(params.APP_MANIFESTS_PATH)  
+#      runAfter:
+#        - set-namespace
+#      taskRef:
+#        kind: Task
+#        name: set-app-name # TASK NAME
+#      workspaces:
+#        - name: workspace
+#          workspace: workspace  
+#        - name: basic-auth
+#          workspace: git-auth    
+#    - name: build-image
+#      params:
+#        - name: TLSVERIFY
+#          value: 'false'
+#        - name: IMAGE
+#          value: >-
+#             image-registry.openshift-image-registry.svc:5000/$(tasks.set-namespace.results.ns)/$(tasks.app-name.results.app_name):$(params.GIT_HASH_COMMIT)
+#      runAfter:
+#        - app-name
+#      taskRef:
+#        kind: ClusterTask
+#        name: buildah # TASK NAME
+#      workspaces:
+#        - name: source
+#          workspace: workspace
+#    - name: update-deployment
+#      params:               
+#        - name: GIT_REPOSITORY
+#          value: $(params.APP_MANIFESTS_GIT)  
+#        - name: CURRENT_IMAGE
+#          value: '$(params.APP_IMAGE_URL):latest'
+#        - name: NEW_IMAGE
+#          value: $(params.APP_IMAGE_URL)
+#        - name: NEW_DIGEST
+#          value: $(tasks.build-image.results.IMAGE_DIGEST)
+#        - name: APP_MANIFESTS_PATH
+#          value: $(params.APP_MANIFESTS_PATH)
+#        - name: GIT_HASH_COMMIT
+#          value: $(params.GIT_HASH_COMMIT)      
+#        - name: APP_BRANCH
+#          value: $(tasks.set-namespace.results.ns)
+#        - name: SOURCE_BRANCH
+#          value: $(params.APP_MANIFESTS_GIT_BRANCH)  
+#      runAfter:
+#        - build-image
+#      taskRef:
+#        kind: Task
+#        name: git-update-deployment # TASK NAME
+#      workspaces:
+#        - name: workspace
+#          workspace: workspace  
+#        - name: basic-auth
+#          workspace: git-auth          
+#    - name: skopeo-copy
+#      when:
+#        - input: $(tasks.adjust-branch-name.results.branch_handled)
+#          operator: in
+#          values: ["hotfix","release"]
+#      params:
+#        - name: srcTLSverify
+#          value: "false"
+#        - name: destTLSverify
+#          value: "false"
+#        - name: srcImageURL
+#          value: docker://image-registry.openshift-image-registry.svc:5000/$(tasks.set-namespace.results.ns)/$(tasks.app-name.results.app_name):$(params.GIT_HASH_COMMIT)
+#        - name: destImageURL
+#          value: docker://image-registry.openshift-image-registry.svc:5000/$(params.PROJECT_PROD_OC_NAME)/$(tasks.app-name.results.app_name):$(params.GIT_HASH_COMMIT)
+#        - name: registry
+#          value: image-registry.openshift-image-registry.svc:5000
+#      runAfter:
+#        - update-deployment
+#      taskRef:
+#        kind: Task
+#        name: skopeo-copy-custom # TASK NAME
+#      workspaces:
+#        - name: workspace
+#          workspace: workspace          
+#  workspaces:
+#    - name: workspace
+#    - name: maven-settings
+#    - name: git-auth
+---
+# Source: gitops-pipelines-factory/templates/workspaces/build-workspace.yaml
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: pipeline-build-workspace-ms-boleto-pipeline-dev
+#   namespace: ms-boletoes-dev2
+# spec:
+#   resources:
+#     requests:
+#       storage: 2Gi
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteOnce
+---
+# Source: gitops-pipelines-factory/templates/workspaces/maven-settings.yaml
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: maven-settings-ms-boleto-pipeline-dev
+#   namespace: ms-boletoes-dev2
+# data:
+#   settings.xml: |
+#     <?xml version="1.0" encoding="UTF-8"?>
+#     <settings>
+#       <servers>
+#         <server>
+#           <id>nexus</id>
+#           <username>admin</username>
+#           <password>admin123</password>
+#         </server>
+#         <server>
+#             <id>nexus-snapshot</id>
+#             <username>admin</username>
+#             <password>admin123</password>
+#         </server>
+#         <server>
+#             <id>nexus-releases</id>
+#             <username>admin</username>
+#             <password>admin123</password>
+#         </server>        
+#       </servers>
+#       <profiles>
+#           <profile>
+#             <id>nexus</id>
+#             <repositories>
+#                 <repository>
+#                   <id>public</id>
+#                   <url>http://nexus.cicd.svc.cluster.local:8081/repository/maven-public/</url>
+#                 </repository>
+#                 <repository>
+#                   <id>redhat-ga</id>
+#                   <url>http://nexus.cicd.svc.cluster.local:8081/repository/redhat-ga/</url>
+#                 </repository>
+#             </repositories>
+#             <pluginRepositories>
+#               <pluginRepository>
+#                   <id>public</id>
+#                   <url>http://nexus.cicd.svc.cluster.local:8081/repository/maven-public/</url>
+#               </pluginRepository>
+#             </pluginRepositories>
+#           </profile>    
+#       </profiles>
+#       <activeProfiles>
+#         <activeProfile>nexus</activeProfile>
+#       </activeProfiles>
+#     </settings>
+---
+# Source: gitops-pipelines-factory/templates/tasks/angular-build.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: build-tool
+  name: build-tag-push-angular  
+  namespace: ms-boletoes-dev2
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task can be used to run a Maven build.
+  params:
+    - default: ''
+      description: App Image Name
+      name: APP_IMAGE
+      type: string
+  steps:              
+#    - image: 'registry.access.redhat.com/ubi8/podman:latest'
+    - image: 'docker.io/library/node:16'
+      name: build-angular
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+
+        npm install -g @angular/cli
+        npm install 
+        ng build
+
+      workingDir: $(workspaces.workspace.path)
+    - image: 'registry.access.redhat.com/ubi8/podman:latest'
+      name: build-image
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+
+        cat > ./Dockerfile-angular <<EOF
+
+        FROM registry.access.redhat.com/ubi8/nginx-120:1-54
+        COPY nginx.conf "${NGINX_CONF_PATH}"
+        COPY ./app/dist/portal-front-angular .
+        
+        CMD nginx -g "daemon off;"
+
+        EOF
+
+        ls -la 
+        
+        cat ./Dockerfile-angular
+
+        podman build ./Dockerfile-angular -t $(params.APP_IMAGE)
+
+      workingDir: $(workspaces.workspace.path)
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace
+---
+# Source: gitops-pipelines-factory/templates/tasks/get-branch-name.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git  
+  name: get-branch-name
+  namespace: ms-boletoes-dev2
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This task make handle in branch names 
+  params:
+    - name: RAW_BRANCH
+      type: string              
+  results:
+    - description: The name of branch without special characters
+      name: branch_handled
+  steps:              
+    - image: 'registry.redhat.io/rhel7-atomic:latest'
+      name: processing-branch
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+        set -xe         
+        
+        BRANCH_UNDER=$(echo "$(params.RAW_BRANCH)"|grep "_"|wc -l) 
+        BRANCH_HIFEN=$(echo "$(params.RAW_BRANCH)"|grep "-"|wc -l) 
+        
+        if [ "$BRANCH_UNDER" -gt 0 ]
+        then
+          MY_BRANCH=$(echo $(params.RAW_BRANCH) |awk -F"_" '{print $1}')
+          echo -n $MY_BRANCH > $(results.branch_handled.path)
+        elif [ "$BRANCH_HIFEN" -gt 0 ]
+        then
+          MY_BRANCH=$(echo $(params.RAW_BRANCH) |awk -F"-" '{print $1}')
+          echo -n $MY_BRANCH > $(results.branch_handled.path)
+        else
+          echo -n $(params.RAW_BRANCH) > $(results.branch_handled.path)
+        fi
+---
+# Source: gitops-pipelines-factory/templates/tasks/git-update-deployment.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git  
+  name: git-update-deployment
+  namespace: ms-boletoes-dev2
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task can be used to update image digest in a Git repo using kustomize
+  params:
+    - name: GIT_REPOSITORY
+      type: string
+    - name: CURRENT_IMAGE
+      type: string
+    - name: NEW_IMAGE
+      type: string
+    - name: NEW_DIGEST
+      type: string
+    - name: APP_MANIFESTS_PATH
+      type: string
+    - name: GIT_HASH_COMMIT
+      type: string
+    - name: APP_BRANCH          
+      type: string
+    - name: SOURCE_BRANCH     
+      type: string
+  results:
+    - description: The commit SHA
+      name: commit
+  steps:      
+    - image: 'docker.io/alpine/git:v2.26.2'
+      name: git-clone
+      resources: {}
+      script: |
+        cp /workspace/basic-auth/.git-credentials ~/.git-credentials
+        cp /workspace/basic-auth/.gitconfig ~/.gitconfig
+        rm -fr git-update-tag-workdir
+        git -c http.sslVerify=false clone -b $(params.SOURCE_BRANCH) $(params.GIT_REPOSITORY) git-update-tag-workdir
+        
+      workingDir: $(workspaces.workspace.path)
+    - image: alpine    
+      name: update-digest
+      resources: {}
+      script: |   
+        cp /workspace/basic-auth/.git-credentials ~/.git-credentials
+        cp /workspace/basic-auth/.gitconfig ~/.gitconfig
+        cd git-update-tag-workdir 
+        cd $(params.APP_MANIFESTS_PATH)
+
+        DEPLOY_FILE=$(grep "config-file" * |awk -F":" '{print $1}')
+        LAST_IMAGE=$(grep "nameVersion:" $DEPLOY_FILE |awk -F":" '{print $4}')
+        LI=$(echo -n $LAST_IMAGE)
+
+        sed -i "s/$LI/$(params.GIT_HASH_COMMIT)/g" $DEPLOY_FILE
+
+      workingDir: $(workspaces.workspace.path)
+    - image: 'docker.io/alpine/git:v2.26.2'
+      name: git-commit
+      resources: {}
+      script: |
+        cp /workspace/basic-auth/.git-credentials ~/.git-credentials
+        cp /workspace/basic-auth/.gitconfig ~/.gitconfig
+
+        cd git-update-tag-workdir
+
+        git config user.email "pipelines-ci@redhat.com"
+        # git config user.name "$GIT_USER"
+
+        # echo "Showing status git repo"
+        git status
+
+        echo "Executing git add"
+        git add .      
+
+        echo "Executing git commit "        
+        git commit -m "[$(context.taskRun.name)] Image tag updated"             
+
+        echo "Add remote"    
+       
+        REPOSITORY=$(echo $(params.GIT_REPOSITORY) | sed -E "s#https://(.*)#https://$GIT_USER:$GIT_TOKEN@\1#g")  
+
+        git remote add auth-origin $REPOSITORY
+        
+        # echo "Executing git push"
+        git -c http.sslVerify=false push auth-origin $(params.SOURCE_BRANCH)
+      workingDir: $(workspaces.workspace.path)
+      
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace 
+    - description: Git auth
+      name: basic-auth
+---
+# Source: gitops-pipelines-factory/templates/tasks/maven.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: build-tool
+  name: maven  
+  namespace: ms-boletoes-dev2
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task can be used to run a Maven build.
+  params:
+    - default: 'gcr.io/cloud-builders/mvn:3.5.0-jdk-11'
+      description: Maven base image
+      name: MAVEN_IMAGE
+      type: string
+    - default:
+        - package
+      description: maven goals to run
+      name: GOALS
+      type: array
+    - default: ''
+      description: The Maven repository mirror url
+      name: MAVEN_MIRROR_URL
+      type: string
+    - default: ''
+      description: The username for the proxy server
+      name: PROXY_USER
+      type: string
+    - default: ''
+      description: The password for the proxy server
+      name: PROXY_PASSWORD
+      type: string
+    - default: ''
+      description: Port number for the proxy server
+      name: PROXY_PORT
+      type: string
+    - default: ''
+      description: Proxy server Host
+      name: PROXY_HOST
+      type: string
+    - default: ''
+      description: Non proxy server host
+      name: PROXY_NON_PROXY_HOSTS
+      type: string
+    - default: http
+      description: Protocol for the proxy ie http or https
+      name: PROXY_PROTOCOL
+      type: string
+  steps:
+    - image: 'registry.access.redhat.com/ubi8/ubi-minimal:latest'
+      name: mvn-settings
+      resources: {}
+      script: >
+        #!/usr/bin/env bash
+
+
+        [[ -f $(workspaces.maven-settings.path)/settings.xml ]] && \
+
+        echo 'using existing $(workspaces.maven-settings.path)/settings.xml' &&
+        exit 0
+
+
+        cat > $(workspaces.maven-settings.path)/settings.xml <<EOF
+
+        <settings>
+          <mirrors>
+            <!-- The mirrors added here are generated from environment variables. Don't change. -->
+            <!-- ### mirrors from ENV ### -->
+          </mirrors>
+          <proxies>
+            <!-- The proxies added here are generated from environment variables. Don't change. -->
+            <!-- ### HTTP proxy from ENV ### -->
+          </proxies>
+        </settings>
+
+        EOF
+
+
+        xml=""
+
+        if [ -n "$(params.PROXY_HOST)" -a -n "$(params.PROXY_PORT)" ]; then
+          xml="<proxy>\
+            <id>genproxy</id>\
+            <active>true</active>\
+            <protocol>$(params.PROXY_PROTOCOL)</protocol>\
+            <host>$(params.PROXY_HOST)</host>\
+            <port>$(params.PROXY_PORT)</port>"
+          if [ -n "$(params.PROXY_USER)" -a -n "$(params.PROXY_PASSWORD)" ]; then
+            xml="$xml\
+                <username>$(params.PROXY_USER)</username>\
+                <password>$(params.PROXY_PASSWORD)</password>"
+          fi
+          if [ -n "$(params.PROXY_NON_PROXY_HOSTS)" ]; then
+            xml="$xml\
+                <nonProxyHosts>$(params.PROXY_NON_PROXY_HOSTS)</nonProxyHosts>"
+          fi
+          xml="$xml\
+              </proxy>"
+          sed -i "s|<!-- ### HTTP proxy from ENV ### -->|$xml|" $(workspaces.maven-settings.path)/settings.xml
+        fi
+
+
+        if [ -n "$(params.MAVEN_MIRROR_URL)" ]; then
+          xml="    <mirror>\
+            <id>mirror.default</id>\
+            <url>$(params.MAVEN_MIRROR_URL)</url>\
+            <mirrorOf>central</mirrorOf>\
+          </mirror>"
+          sed -i "s|<!-- ### mirrors from ENV ### -->|$xml|" $(workspaces.maven-settings.path)/settings.xml
+        fi
+    - args:
+        - '-Dmaven.repo.local=$(workspaces.source.path)/.m2'
+        - '-s'
+        - $(workspaces.maven-settings.path)/settings.xml
+        - $(params.GOALS)
+      command:
+        - /usr/bin/mvn
+      image: $(params.MAVEN_IMAGE)
+      name: mvn-goals
+      resources:
+        limits:
+          cpu: '1'
+          memory: 4Gi
+        requests:
+          cpu: 200m
+          memory: 512Mi
+      workingDir: $(workspaces.source.path)
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: source
+    - description: >-
+        The workspace consisting of the custom maven settings provided by the
+        user.
+      name: maven-settings
+---
+# Source: gitops-pipelines-factory/templates/tasks/set-app-name.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git  
+  name: set-app-name
+  namespace: ms-boletoes-dev2
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task get app name from deployment file.
+  params:
+    - name: GIT_REPOSITORY
+      type: string
+    - name: SOURCE_BRANCH     
+      type: string
+    - name: SOURCE_FOLDER     
+      type: string  
+  results:
+    - description: Application name
+      name: app_name
+  steps:      
+    - image: 'docker.io/alpine/git:v2.26.2'
+      name: git-clone-config-repo
+      resources: {}
+      script: |
+        cp /workspace/basic-auth/.git-credentials ~/.git-credentials
+        cp /workspace/basic-auth/.gitconfig ~/.gitconfig
+        rm -fr git-update-tag-workdir
+        git -c http.sslVerify=false clone -b $(params.SOURCE_BRANCH) $(params.GIT_REPOSITORY) git-update-tag-workdir
+        
+      workingDir: $(workspaces.workspace.path)
+    - image: alpine    
+      name: get-app-name
+      resources: {}
+      script: |   
+        cd git-update-tag-workdir
+        cd $(params.SOURCE_FOLDER)
+
+        DEPLOY_FILE=$(grep "config-file" * |awk -F":" '{print $1}')
+        echo -n $(grep -i "  deploymentName:" $DEPLOY_FILE |head -n1|awk -F":" '{print $2}') > $(results.app_name.path)
+        
+      workingDir: $(workspaces.workspace.path)
+      
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace 
+    - description: Git auth
+      name: basic-auth
+---
+# Source: gitops-pipelines-factory/templates/tasks/set-build-namespace.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git  
+  name: set-build-namespace
+  namespace: ms-boletoes-dev2
+  labels:
+    app.kubernetes.io/version: '0.1'
+    operator.tekton.dev/provider-type: community
+spec:
+  description: This Task can be used to set the namespace to run pipeline
+  params:
+    - name: PROJECT_OC_NAME
+      type: string              
+  results:
+    - description: The namespace where pipeline will running
+      name: ns
+    - description: The name of branch without special characters
+      name: clean_branch      
+  steps:              
+    - image: 'registry.redhat.io/rhel7-atomic:latest'
+      name: check-branch
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+        set -xe         
+        
+        PROJECT=$(echo -n "$(params.PROJECT_OC_NAME)") 
+        
+        echo -n $PROJECT > $(results.ns.path)
+---
+# Source: gitops-pipelines-factory/templates/tasks/skopeo-copy.yaml
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: skopeo  
+  name: skopeo-copy-custom
+  namespace: ms-boletoes-dev2
+spec:
+  description: This Task can be used to update image in registry
+  params:
+    - name: srcTLSverify
+      type: string
+    - name: destTLSverify
+      type: string
+    - name: srcImageURL
+      description: src Image URL     
+    - name: destImageURL
+      type: string
+    - name: registry
+      type: string
+  results:
+    - description: The result teste
+      name: branch
+  steps:      
+    - image: 'quay.io/skopeo/stable:v1.9.0'
+      env:
+        - name: REGISTRY_USER
+          valueFrom:
+            secretKeyRef:
+              name: registry-token
+              key: user  
+        - name: REGISTRY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: registry-token
+              key: password                  
+    
+      name: copy-registry
+      resources: {}
+      script: |
+
+        {
+          skopeo login --tls-verify=false -u $REGISTRY_USER -p $REGISTRY_TOKEN $(params.registry)
+        } &> /dev/null
+        
+        skopeo copy $(params.srcImageURL) $(params.destImageURL) --src-tls-verify=$(params.srcTLSverify) --dest-tls-verify=$(params.destTLSverify)
+        
+      workingDir: $(workspaces.workspace.path)
+      
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace
+

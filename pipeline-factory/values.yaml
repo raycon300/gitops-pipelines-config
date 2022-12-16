@@ -4,14 +4,15 @@ config:
   nexusPass: admin123
 
 pipelines: 
-  - projectOcName: ms-boletoes-dev
+  - projectOcName: ms-boletoes-dev2
+    
     type: javaSemSonar
     pipeName: ms-boleto-pipeline-dev
-    appSourceGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello'
-    appSourceBranch: 'develop'
-    appManifestGit: 'http://git-gogs-unsafe-gogs.apps-crc.testing/gogs-admin/spring-boot-hello-dev-config'
-    appManifestGitBranch: 'master'
-    appManifestPath: 'spring-boot-hello'
+    appSourceGit: 'https://github.com/raycon300/app-service'
+    appSourceBranch: 'main'
+    appManifestGit: 'https://github.com/raycon300/app-service-gitops-dev'
+    appManifestGitBranch: 'main'
+    appManifestPath: 'oc-manifests'
     appImageUrl: latest
     appImageTag: latest
     gitHashCommit: '1.0.0'

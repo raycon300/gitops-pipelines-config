@@ -1,56 +1,62 @@
 {{ if .Values.pipelines }}
 {{ range $pipeline := .Values.pipelines }}
+{{ $pipelineName := $pipeline.pipeName }}
+{{ $namespace := $pipeline.projectOcName }}
+{{ $user := $.Values.config.nexusUser  }}
+{{ $pass := $.Values.config.nexusPass  }}
+{{ $url := $.Values.config.nexus }}
+
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: maven-settings-{{ $pipeline.pipeName }}
-  namespace: {{ $pipeline.projectOcName }}
-data:
-  settings.xml: |
-    <?xml version="1.0" encoding="UTF-8"?>
-    <settings>
-      <servers>
-        <server>
-          <id>nexus</id>
-          <username>{{ $.Values.config.nexusUser }}</username>
-          <password>{{ $.Values.config.nexusPass }}</password>
-        </server>
-        <server>
-            <id>nexus-snapshot</id>
-            <username>{{ $.Values.config.nexusUser }}</username>
-            <password>{{ $.Values.config.nexusPass }}</password>
-        </server>
-        <server>
-            <id>nexus-releases</id>
-            <username>{{ $.Values.config.nexusUser }}</username>
-            <password>{{ $.Values.config.nexusPass }}</password>
-        </server>        
-      </servers>
-      <profiles>
-          <profile>
-            <id>nexus</id>
-            <repositories>
-                <repository>
-                  <id>public</id>
-                  <url>{{ $.Values.config.nexus }}/repository/maven-public/</url>
-                </repository>
-                <repository>
-                  <id>redhat-ga</id>
-                  <url>{{ $.Values.config.nexus }}/repository/redhat-ga/</url>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-              <pluginRepository>
-                  <id>public</id>
-                  <url>{{ $.Values.config.nexus }}/repository/maven-public/</url>
-              </pluginRepository>
-            </pluginRepositories>
-          </profile>    
-      </profiles>
-      <activeProfiles>
-        <activeProfile>nexus</activeProfile>
-      </activeProfiles>
-    </settings>
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: maven-settings-{{ $pipelineName }}
+#   namespace: {{ $namespace }}
+# data:
+#   settings.xml: |
+#     <?xml version="1.0" encoding="UTF-8"?>
+#     <settings>
+#       <servers>
+#         <server>
+#           <id>nexus</id>
+#           <username>{{ $user }}</username>
+#           <password>{{ $pass }}</password>
+#         </server>
+#         <server>
+#             <id>nexus-snapshot</id>
+#             <username>{{ $user }}</username>
+#             <password>{{ $pass }}</password>
+#         </server>
+#         <server>
+#             <id>nexus-releases</id>
+#             <username>{{ $user }}</username>
+#             <password>{{ $pass }}</password>
+#         </server>        
+#       </servers>
+#       <profiles>
+#           <profile>
+#             <id>nexus</id>
+#             <repositories>
+#                 <repository>
+#                   <id>public</id>
+#                   <url>{{ $url }}/repository/maven-public/</url>
+#                 </repository>
+#                 <repository>
+#                   <id>redhat-ga</id>
+#                   <url>{{ $url }}/repository/redhat-ga/</url>
+#                 </repository>
+#             </repositories>
+#             <pluginRepositories>
+#               <pluginRepository>
+#                   <id>public</id>
+#                   <url>{{ $url }}/repository/maven-public/</url>
+#               </pluginRepository>
+#             </pluginRepositories>
+#           </profile>    
+#       </profiles>
+#       <activeProfiles>
+#         <activeProfile>nexus</activeProfile>
+#       </activeProfiles>
+#     </settings>
 {{ end }}
 {{ end }}
