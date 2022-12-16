@@ -5,17 +5,17 @@
 {{ $namespace := $pipeline.projectOcName }}
 
 ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: pipeline-build-workspace-{{ $pipelineName }}
-#   namespace: {{ $namespace }}
-# spec:
-#   resources:
-#     requests:
-#       storage: {{$pvcSize}}
-#   volumeMode: Filesystem
-#   accessModes:
-#     - ReadWriteOnce
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pipeline-build-workspace-{{ $pipelineName }}
+  namespace: {{ $namespace }}
+spec:
+  resources:
+    requests:
+      storage: {{$pvcSize}}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
 {{ end }}
 {{ end }}
