@@ -34,7 +34,7 @@ spec:
       default: {{ $gitOpsRepository }}   
     - name: APP_MANIFESTS_GIT_BRANCH      
       type: string
-      default: {{ $pipeline.appManifestGitBranch }}    
+      default: {{ $gitOpsBranch }}    
     - name: APP_MANIFESTS_PATH
       type: string
       default: {{ $gitOpsBranch }}
@@ -50,7 +50,7 @@ spec:
       
     - name: PROJECT_OC_NAME
       type: string
-      default: {{ $pipeline.projectOcName }}
+      default: {{ $namespace }}
       description: The pipelines project runs
     - name: PROJECT_PROD_OC_NAME
       type: string
@@ -77,7 +77,7 @@ spec:
           value: $(params.APP_SOURCE_BRANCH)  
       taskRef:
         kind: Task
-        name: get-branch-name # TASK NAME
+        name: get-branch-name 
     - name: source-clone
       when: 
         - input: $(tasks.adjust-branch-name.results.branch_handled)
@@ -98,12 +98,12 @@ spec:
         - adjust-branch-name       
       taskRef:
         kind: ClusterTask 
-        name: git-clone # TASK NAME
+        name: git-clone 
       workspaces:
         - name: output
           workspace: workspace
-        - name: basic-auth
-          workspace: git-auth
+#        - name: basic-auth
+#          workspace: git-auth
     - name: build-app
       params:
         - name: GOALS
@@ -115,7 +115,7 @@ spec:
         - source-clone
       taskRef:
         kind: ClusterTask
-        name: maven # TASK NAME
+        name: maven 
       workspaces:
         - name: source
           workspace: workspace
@@ -129,7 +129,7 @@ spec:
         - build-app 
       taskRef:
         kind: Task
-        name: set-build-namespace     # TASK NAME        
+        name: set-build-namespace             
     - name: app-name
       params:               
         - name: GIT_REPOSITORY
@@ -142,12 +142,12 @@ spec:
         - set-namespace
       taskRef:
         kind: Task
-        name: set-app-name # TASK NAME
+        name: set-app-name 
       workspaces:
         - name: workspace
           workspace: workspace  
-        - name: basic-auth
-          workspace: git-auth    
+#        - name: basic-auth
+#          workspace: git-auth    
     - name: build-image
       params:
         - name: TLSVERIFY
@@ -159,7 +159,7 @@ spec:
         - app-name
       taskRef:
         kind: ClusterTask
-        name: buildah # TASK NAME
+        name: buildah 
       workspaces:
         - name: source
           workspace: workspace
@@ -185,7 +185,7 @@ spec:
         - build-image
       taskRef:
         kind: Task
-        name: git-update-deployment # TASK NAME
+        name: git-update-deployment 
       workspaces:
         - name: workspace
           workspace: workspace  
@@ -211,7 +211,7 @@ spec:
         - update-deployment
       taskRef:
         kind: Task
-        name: skopeo-copy-custom # TASK NAME
+        name: skopeo-copy-custom 
       workspaces:
         - name: workspace
           workspace: workspace          
