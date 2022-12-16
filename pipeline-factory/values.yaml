@@ -1,17 +1,20 @@
-config:
-  nexus: http://nexus.cicd.svc.cluster.local:8081
-  nexusUser: admin
-  nexusPass: admin123
+nexus:
+  config:
+    url: http://nexus.cicd.svc.cluster.local:8081
+    user: admin
+    pass: admin123
 
 pipelines: 
-  - projectOcName: ms-boletoes-dev
-    pipeName: ms-boleto-pipeline-dev
-    appSourceGit: 'https://github.com/raycon300/app-service'
-    appSourceBranch: 'main'
-    appManifestGit: 'https://github.com/raycon300/app-service-gitops-dev'
-    appManifestGitBranch: 'main'
-    appManifestPath: 'oc-manifests'
-    appImageUrl: latest
-    appImageTag: latest
-    gitHashCommit: '1.0.0'
-    projectProdOcName: ms-boletoes-prod
+  - namespace: ms-boletoes-dev
+    pipelineName: ms-boleto-pipeline-dev
+    sourceRepository: 'https://github.com/raycon300/app-service'
+    sourceBranch: 'main'
+    sourceGitHashCommit: '1.0.0'
+    gitOpsRepository: 'https://github.com/raycon300/app-service-gitops-dev'
+    gitOpsBranch: 'main'
+    gitOpsPath: 'oc-manifests'
+    containerImage: latest
+    containerImageTag: latest
+    namespaceProd: ms-boletoes-prod
+    pvcSize: 2Gi 
+

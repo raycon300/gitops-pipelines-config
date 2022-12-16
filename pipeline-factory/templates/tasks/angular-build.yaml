@@ -8,7 +8,7 @@ metadata:
     tekton.dev/pipelines.minVersion: 0.12.1
     tekton.dev/tags: build-tool
   name: build-tag-push-angular  
-  namespace: {{ $pipeline.projectOcName }}
+  namespace: {{ $pipeline.namespace }}
   labels:
     app.kubernetes.io/version: '0.1'
     operator.tekton.dev/provider-type: community
@@ -20,7 +20,6 @@ spec:
       name: APP_IMAGE
       type: string
   steps:              
-#    - image: 'registry.access.redhat.com/ubi8/podman:latest'
     - image: 'docker.io/library/node:16'
       name: build-angular
       resources: {}

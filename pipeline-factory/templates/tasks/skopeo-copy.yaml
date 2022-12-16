@@ -8,7 +8,7 @@ metadata:
     tekton.dev/pipelines.minVersion: 0.12.1
     tekton.dev/tags: skopeo  
   name: skopeo-copy-custom
-  namespace: {{ $pipeline.projectOcName }}
+  namespace: {{ $pipeline.namespace }}
 spec:
   description: This Task can be used to update image in registry
   params:

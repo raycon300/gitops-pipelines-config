@@ -8,7 +8,7 @@ metadata:
     tekton.dev/pipelines.minVersion: 0.12.1
     tekton.dev/tags: git  
   name: set-app-name
-  namespace: {{ $pipeline.projectOcName }}
+  namespace: {{ $pipeline.namespace }}
   labels:
     app.kubernetes.io/version: '0.1'
     operator.tekton.dev/provider-type: community

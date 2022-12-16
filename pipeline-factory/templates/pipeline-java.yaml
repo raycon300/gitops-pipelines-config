@@ -1,20 +1,5 @@
 {{ if .Values.pipelines }}
 {{ range $pipeline := .Values.pipelines }}
-{{$pipelineName := $pipeline.pipeName}}
-{{$namespace := $pipeline.projectOcName}}
-
-{{$sourceRepository := $pipeline.appSourceGit}}
-{{$sourceBranch := $pipeline.appSourceBranch}}
-
-{{$gitOpsRepository := $pipeline.appManifestGit}}
-{{$gitOpsBranch := $pipeline.appManifestGitBranch}}
-{{$gitOpsPath := $pipeline.appManifestPath}}
-
-{{$containerImage := $pipeline.appImageUrl}}
-{{$containerImageTag := $pipeline.appImageTag}}
-
-{{$namespaceProd := $pipeline.projectProdOcName}}
-{{$sourceGitHashCommit := $pipeline.gitHashCommit}}
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline

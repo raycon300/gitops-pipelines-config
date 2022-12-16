@@ -1,9 +1,6 @@
 {{ if .Values.pipelines }}
 {{ range $pipeline := .Values.pipelines }}
-{{ $pipelineName := $pipeline.pipeName }}
 {{ $pvcSize := $pipeline.pvcSize | default "2Gi"  }}
-{{ $namespace := $pipeline.projectOcName }}
-
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
