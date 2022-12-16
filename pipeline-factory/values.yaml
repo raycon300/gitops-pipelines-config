@@ -5,7 +5,6 @@ config:
 
 pipelines: 
   - projectOcName: ms-boletoes-dev
-    type: javaSemSonar
     pipeName: ms-boleto-pipeline-dev
     appSourceGit: 'https://github.com/raycon300/app-service'
     appSourceBranch: 'main'
@@ -15,3 +14,4 @@ pipelines:
     appImageUrl: latest
     appImageTag: latest
     gitHashCommit: '1.0.0'
+    projectProdOcName: ms-boletoes-prod
