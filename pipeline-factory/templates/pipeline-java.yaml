@@ -64,10 +64,6 @@ spec:
         kind: Task
         name: get-branch-name 
     - name: source-clone
-#      when: 
-#        - input: $(tasks.adjust-branch-name.results.branch_handled)
-#          operator: in
-#          values: ["develop","hotfix","release"]
       params:
         - name: url
           value: $(params.APP_SOURCE_GIT)
@@ -87,8 +83,6 @@ spec:
       workspaces:
         - name: output
           workspace: workspace
-#        - name: basic-auth
-#          workspace: git-auth
     - name: build-app
       params:
         - name: GOALS
@@ -131,8 +125,6 @@ spec:
       workspaces:
         - name: workspace
           workspace: workspace  
-#        - name: basic-auth
-#          workspace: git-auth    
     - name: build-image
       params:
         - name: TLSVERIFY
@@ -173,14 +165,8 @@ spec:
         name: git-update-deployment 
       workspaces:
         - name: workspace
-          workspace: workspace  
-#        - name: basic-auth
-#          workspace: git-auth          
+          workspace: workspace        
     - name: skopeo-copy
-#      when:
-#        - input: $(tasks.adjust-branch-name.results.branch_handled)
-#          operator: in
-#          values: ["hotfix","release"]
       params:
         - name: srcTLSverify
           value: "false"
@@ -203,6 +189,5 @@ spec:
   workspaces:
     - name: workspace
     - name: maven-settings
-#    - name: git-auth
 {{ end }}
 {{ end }}    

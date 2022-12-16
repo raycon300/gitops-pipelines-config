@@ -5,8 +5,8 @@ nexus:
     pass: admin123
 
 pipelines: 
-  - namespace: ms-boletoes-dev
-    pipelineName: ms-boleto-pipeline-dev
+  - namespace: ms-service-dev
+    pipelineName: ms-service-pipeline-dev
     sourceRepository: 'https://github.com/raycon300/app-service'
     sourceBranch: 'main'
     sourceGitHashCommit: '1.0.0'
@@ -15,6 +15,6 @@ pipelines:
     gitOpsPath: 'oc-manifests'
     containerImage: latest
     containerImageTag: latest
-    namespaceProd: ms-boletoes-prod
+    namespaceProd: ms-service-prod
     pvcSize: 2Gi 
 
