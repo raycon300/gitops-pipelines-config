@@ -5,7 +5,7 @@ nexus:
     pass: admin123
 
 pipelines: 
-  - namespace: ms-boletoes-dev
+  - namespace: ms-boletoes-dev3
     pipelineName: ms-boleto-pipeline-dev
     sourceRepository: 'https://github.com/raycon300/app-service'
     sourceBranch: 'main'

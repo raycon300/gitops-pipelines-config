@@ -5,12 +5,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pipeline-build-workspace-{{ $pipelineName }}
-  namespace: {{ $namespace }}
+  name: pipeline-build-workspace-{{ $pipeline.pipelineName }}
+  namespace: {{ $pipeline.namespace }}
 spec:
   resources:
     requests:
-      storage: {{$pvcSize}}
+      storage: {{$pipeline.pvcSize}}
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce

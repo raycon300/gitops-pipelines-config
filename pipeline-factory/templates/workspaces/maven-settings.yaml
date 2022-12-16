@@ -45,7 +45,7 @@ data:
             <pluginRepositories>
               <pluginRepository>
                   <id>public</id>
-                  <url>{{ $nexus.config.$url }}/repository/maven-public/</url>
+                  <url>{{ $nexus.config.url }}/repository/maven-public/</url>
               </pluginRepository>
             </pluginRepositories>
           </profile>    

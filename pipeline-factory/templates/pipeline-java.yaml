@@ -4,46 +4,46 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: pipeline-java-{{ $pipelineName }}
-  namespace: {{ $namespace }}
+  name: pipeline-java-{{ $pipeline.pipelineName }}
+  namespace: {{ $pipeline.namespace }}
 spec:
   params:
     - name: APP_SOURCE_GIT
       type: string
-      default: {{ $sourceRepository }}
+      default: {{ $pipeline.sourceRepository }}
     - name: APP_SOURCE_BRANCH
       type: string         
-      default: {{ $sourceBranch }}
+      default: {{ $pipeline.sourceBranch }}
     - name: APP_MANIFESTS_GIT      
       type: string
-      default: {{ $gitOpsRepository }}   
+      default: {{ $pipeline.gitOpsRepository }}   
     - name: APP_MANIFESTS_GIT_BRANCH      
       type: string
-      default: {{ $gitOpsBranch }}    
+      default: {{ $pipeline.gitOpsBranch }}    
     - name: APP_MANIFESTS_PATH
       type: string
-      default: {{ $gitOpsBranch }}
+      default: {{ $pipeline.gitOpsBranch }}
       description: The application manifests git repository path
     - name: APP_IMAGE_URL
       type: string
-      default: {{ $containerImage }}
+      default: {{ $pipeline.containerImage }}
       description: The url application image to build
     - name: APP_IMAGE_TAG
       type: string
-      default: {{ $containerImageTag }}
+      default: {{ $pipeline.containerImageTag }}
       description: The application image tag to build
       
     - name: PROJECT_OC_NAME
       type: string
-      default: {{ $namespace }}
+      default: {{ $pipeline.namespace }}
       description: The pipelines project runs
     - name: PROJECT_PROD_OC_NAME
       type: string
-      default: {{ $namespaceProd }}
+      default: {{ $pipeline.namespaceProd }}
       description: The pipelines project runs
     - name: GIT_HASH_COMMIT
       type: string
-      default: {{ $sourceGitHashCommit }}
+      default: {{ $pipeline.sourceGitHashCommit }}
       description: The application image tag to build
   results:
     - description: The image digest built in the pipeline
