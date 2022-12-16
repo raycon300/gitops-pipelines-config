@@ -19,7 +19,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: pipeline-java-run{{ $pipelineName }}
+  generateName:  pipeline-java-run-{{ $pipelineName }}
 spec:
   params:
     - name: APP_SOURCE_GIT
