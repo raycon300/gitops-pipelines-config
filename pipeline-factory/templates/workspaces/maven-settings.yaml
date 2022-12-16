@@ -1,5 +1,5 @@
 {{ if .Values.pipelines }}
-{{ $nexus := .Values.nexus  }}
+{{ $nexus := $.Values.nexus  }}
 {{ range $pipeline := .Values.pipelines }}
 
 ---
