@@ -1,0 +1,57 @@
+{{ if .Values.pipelines }}
+{{ range $pipeline := .Values.pipelines }}
+{{$pipelineName := $pipeline.pipeName}}
+{{$namespace := $pipeline.projectOcName}}
+
+{{$sourceRepository := $pipeline.appSourceGit}}
+{{$sourceBranch := $pipeline.appSourceBranch}}
+
+{{$gitOpsRepository := $pipeline.appManifestGit}}
+{{$gitOpsBranch := $pipeline.appManifestGitBranch}}
+{{$gitOpsPath := $pipeline.appManifestPath}}
+
+{{$containerImage := $pipeline.appImageUrl}}
+{{$containerImageTag := $pipeline.appImageTag}}
+
+{{$namespaceProd := $pipeline.projectProdOcName}}
+{{$sourceGitHashCommit := $pipeline.gitHashCommit}}
+
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: pipeline-java-run{{ $pipelineName }}
+spec:
+  params:
+    - name: APP_SOURCE_GIT
+      value: {{ $sourceRepository }}
+    - name: APP_SOURCE_BRANCH
+      value: {{ $sourceBranch }}
+    - name: APP_MANIFESTS_GIT      
+      value: {{ $gitOpsRepository }}   
+    - name: APP_MANIFESTS_GIT_BRANCH      
+      value: {{ $gitOpsBranch }}    
+    - name: APP_MANIFESTS_PATH
+      value: {{ $gitOpsBranch }}
+    - name: APP_IMAGE_URL
+      value: {{ $containerImage }}
+    - name: APP_IMAGE_TAG
+      value: {{ $containerImageTag }}
+    - name: PROJECT_OC_NAME
+      value: {{ $namespace }}
+    - name: PROJECT_PROD_OC_NAME
+      value: {{ $namespaceProd }}
+    - name: GIT_HASH_COMMIT
+      value: {{ $sourceGitHashCommit }}
+
+  pipelineRef:
+    name: pipeline-java-{{ $pipelineName }}
+  timeout: 20m0s
+  workspaces:
+  - name: workspace
+    persistentVolumeClaim:
+      claimName: pipeline-build-workspace-{{ $pipelineName }}
+  - name: maven-settings
+    configmap:
+      name: maven-settings-{{ $pipelineName }}
+{{end}}
+{{end}}

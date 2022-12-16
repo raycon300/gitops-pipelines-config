@@ -79,10 +79,10 @@ spec:
         kind: Task
         name: get-branch-name 
     - name: source-clone
-      when: 
-        - input: $(tasks.adjust-branch-name.results.branch_handled)
-          operator: in
-          values: ["develop","hotfix","release"]
+#      when: 
+#        - input: $(tasks.adjust-branch-name.results.branch_handled)
+#          operator: in
+#          values: ["develop","hotfix","release"]
       params:
         - name: url
           value: $(params.APP_SOURCE_GIT)
@@ -192,10 +192,10 @@ spec:
 #        - name: basic-auth
 #          workspace: git-auth          
     - name: skopeo-copy
-      when:
-        - input: $(tasks.adjust-branch-name.results.branch_handled)
-          operator: in
-          values: ["hotfix","release"]
+#      when:
+#        - input: $(tasks.adjust-branch-name.results.branch_handled)
+#          operator: in
+#          values: ["hotfix","release"]
       params:
         - name: srcTLSverify
           value: "false"
